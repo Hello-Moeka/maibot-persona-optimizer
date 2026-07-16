@@ -1,0 +1,52 @@
+[plugin]
+enabled = true
+config_version = "1.0.0"
+
+[optimization]
+# 设置要求后，插件默认每 60 分钟读取最近一小时聊天并生成一个新版本。
+# 也可通过 QQ：/人设优化 要求 <内容>
+requirement = ""
+interval_minutes = 60
+minimum_messages = 8
+max_total_messages = 500
+max_messages_per_stream = 100
+max_streams = 20
+max_total_chars = 60000
+summary_chunk_chars = 12000
+max_personality_chars = 12000
+max_reply_style_chars = 8000
+
+[chat_source]
+platforms = ["qq"]
+include_group_chats = true
+# 私聊可能包含敏感内容，确认需要后再开启。
+include_private_chats = false
+excluded_stream_ids = []
+exclude_commands = true
+
+[model]
+# planner / replyer / maibot_task / openai_compatible
+mode = "planner"
+maibot_task_name = "utils"
+temperature = 0.3
+summary_max_tokens = 1800
+direction_max_tokens = 2200
+persona_max_tokens = 4000
+
+# 自定义 OpenAI 兼容模型。API Key 只能在配置文件或 WebUI 中设置，不接受 QQ 指令。
+custom_endpoint = ""
+custom_api_key = ""
+custom_model_name = ""
+custom_timeout_seconds = 180
+
+[security]
+# 强烈建议填写，例如 ["qq:123456789"]。
+administrators = []
+# 同时继承 bot_config.toml 中 plugin.permission 的管理员。
+inherit_plugin_management_permissions = true
+allow_public_help = true
+
+[storage]
+history_limit = 50
+command_output_chars = 3500
+

@@ -1,0 +1,51 @@
+{
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "name": "MaiBot 人设优化器",
+  "description": "每小时概括聊天表现，使用可选模型生成人设优化方向与可审阅的新设定版本。",
+  "author": {
+    "name": "kumburovicbranko682-boop",
+    "url": "https://github.com/kumburovicbranko682-boop"
+  },
+  "license": "MIT",
+  "urls": {
+    "repository": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer",
+    "homepage": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer",
+    "documentation": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer/blob/main/README.md",
+    "issues": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer/issues"
+  },
+  "changelog": "CHANGELOG.md",
+  "host_application": {
+    "min_version": "1.0.12",
+    "max_version": "1.99.99"
+  },
+  "sdk": {
+    "min_version": "2.7.0",
+    "max_version": "2.99.99"
+  },
+  "dependencies": [],
+  "capabilities": [
+    "send.text",
+    "llm.generate",
+    "llm.get_available_models",
+    "config.get",
+    "message.get_by_time",
+    "message.build_readable"
+  ],
+  "i18n": {
+    "default_locale": "zh-CN",
+    "supported_locales": [
+      "zh-CN"
+    ]
+  },
+  "display": {
+    "icon": {
+      "type": "lucide",
+      "value": "wand-sparkles",
+      "fallback": "sparkles",
+      "background": "#7C3AED"
+    }
+  },
+  "id": "github.kumburovicbranko682-boop.persona-optimizer"
+}
+

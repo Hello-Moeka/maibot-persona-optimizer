@@ -1,0 +1,145 @@
+# MaiBot 人设优化器
+
+面向 MaiBot 新版独立 Runner / `maibot-plugin-sdk` 2.x 的人设优化插件。
+
+管理员设置优化要求后，插件默认每 60 分钟读取最近一小时聊天，依次完成：
+
+1. 分块概括聊天中的实际表现；
+2. 根据管理员要求生成有证据支撑的优化方向；
+3. 从 MaiBot 主配置读取当前 `personality.personality` 与 `personality.reply_style`；
+4. 生成完整的新人格与表达风格；
+5. 保存 JSON、Markdown 和可复制的 TOML 版本。
+
+## 兼容性
+
+- MaiBot：`1.0.12` 至 `1.x`
+- maibot-plugin-sdk：`2.7.0` 至 `2.x`
+- Python：跟随 MaiBot（当前为 Python 3.10+）
+- 无第三方 Python 依赖
+
+## 安装
+
+将整个目录放入 MaiBot 的插件目录，例如：
+
+```text
+MaiBot/
+└─ plugins/
+   └─ persona_optimizer/
+      ├─ plugin.py
+      ├─ config.py
+      ├─ config.toml
+      └─ _manifest.json
+```
+
+随后在 MaiBot WebUI 中加载并启用插件。
+
+## 首次配置
+
+至少配置一名管理员。推荐在插件 WebUI 配置页或 `config.toml` 中填写：
+
+```toml
+[security]
+administrators = ["qq:123456789"]
+```
+
+默认还会继承 MaiBot 主配置 `plugin.permission` 中的管理员。若两处都没有当前账号，除帮助外的 QQ 指令会被拒绝。
+
+可以直接在配置中填写优化要求，也可以使用 QQ 指令：
+
+```text
+/人设优化 要求 保持温柔和耐心，但减少模板化安慰，多结合聊天上下文自然回应
+```
+
+设置要求后，首次自动优化会在一个间隔后执行；默认间隔为 60 分钟。需要立即执行时使用 `/人设优化 立即`。
+
+## QQ 指令
+
+| 指令 | 说明 |
+|---|---|
+| `/人设优化 帮助` | 查看帮助 |
+| `/人设优化 状态` | 查看开关、要求、模型、下次执行与最近错误 |
+| `/人设优化 要求 <内容>` | 保存优化要求并重新计算下次执行时间 |
+| `/人设优化 要求 清除` | 清除要求并暂停自动任务 |
+| `/人设优化 立即 [小时]` | 手动分析最近 N 小时，默认 1 小时 |
+| `/人设优化 模型 planner` | 使用 MaiBot planner 任务 |
+| `/人设优化 模型 replyer` | 使用 MaiBot replyer 任务 |
+| `/人设优化 模型 列表` | 查看可用 MaiBot 模型任务 |
+| `/人设优化 模型 任务 <名称>` | 使用其他已注册 MaiBot 模型任务 |
+| `/人设优化 模型 自定义 <模型标识>` | 使用配置好的 OpenAI 兼容接口 |
+| `/人设优化 历史 [页码]` | 查看已保存版本 |
+| `/人设优化 查看 <序号\|版本ID\|最新>` | 查看某个优化版本 |
+| `/人设优化 开启` / `/人设优化 关闭` | 控制自动任务 |
+| `/人设优化 重置` | 清除 QQ 指令覆盖项，恢复配置文件设置 |
+
+QQ 指令写入的是插件专属持久化状态，不会改动插件源码或 MaiBot 主配置。
+
+## 模型选择
+
+### planner / replyer
+
+插件把 `planner` 或 `replyer` 作为 MaiBot 模型任务名传给官方 `ctx.llm.generate()`，实际模型、负载均衡和重试策略由 MaiBot 的模型配置负责。
+
+### 其他 MaiBot 任务
+
+先发送 `/人设优化 模型 列表`，再使用 `/人设优化 模型 任务 utils` 等指令选择现有任务。
+
+### 自定义模型
+
+支持 OpenAI Chat Completions 兼容接口。在 WebUI 或 `config.toml` 中设置：
+
+```toml
+[model]
+mode = "openai_compatible"
+custom_endpoint = "https://api.example.com/v1"
+custom_api_key = "YOUR_API_KEY"
+custom_model_name = "your-model"
+```
+
+`custom_endpoint` 可填写：
+
+- 服务根地址，例如 `https://api.example.com`；
+- 版本地址，例如 `https://api.example.com/v1`；
+- 完整地址，例如 `https://api.example.com/v1/chat/completions`。
+
+出于安全考虑，QQ 指令只能切换自定义模型标识，不能写入接口地址或 API Key。
+
+## 设定目录
+
+插件严格使用 SDK 提供的持久化路径，不从插件源码目录推断 MaiBot 根目录。输出位于：
+
+```text
+data/plugins/local.maimai.persona-optimizer/settings/
+├─ latest.json
+├─ latest.md
+├─ latest.toml
+└─ history/
+   ├─ 20260710-120000-ab12cd34.json
+   └─ 20260710-120000-ab12cd34.md
+```
+
+- `latest.toml`：只包含 `[personality]`，便于审阅后复制到 `bot_config.toml`；
+- `latest.md`：包含聊天概括、优化方向、优化前后设定；
+- `latest.json`：完整结构化结果；
+- `history/`：历史版本，数量由 `storage.history_limit` 控制。
+
+MaiBot SDK 当前只向第三方插件开放主配置读取能力，没有开放主配置写入能力。为符合插件规范并防止模型输出直接覆盖线上人设，本插件不会越权修改 `bot_config.toml`；生成结果会写入上述设定目录，须由管理员审阅后应用。
+
+## 隐私与安全
+
+- 默认只分析 QQ 群聊，不读取私聊；如确有需要，可开启 `chat_source.include_private_chats`。
+- 默认排除命令消息，可用 `excluded_stream_ids` 排除指定聊天流。
+- 原始聊天不会写入优化历史，只保存模型生成的概括与方向。
+- 提示词明确把聊天记录视为不可信数据，以降低聊天中的提示词注入风险。
+- 使用自定义接口时，聊天概括所需数据会发送给该接口，请自行确认其隐私政策。
+- 定时任务与手动任务使用互斥锁，不会同时覆盖 `latest` 文件。
+- 文件通过同目录临时文件原子替换，避免异常退出留下半份设定。
+
+## 开发验证
+
+```powershell
+python -m compileall -q .
+python -m unittest discover -s tests -v
+```
+
+发布到自己的仓库前，请把 `_manifest.json` 中的作者和仓库链接替换为真实信息。
+
