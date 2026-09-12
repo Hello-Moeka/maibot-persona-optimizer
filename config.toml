@@ -15,6 +15,7 @@ max_total_chars = 60000
 summary_chunk_chars = 12000
 max_personality_chars = 12000
 max_reply_style_chars = 8000
+max_plan_style_chars = 8000
 
 [chat_source]
 platforms = ["qq"]

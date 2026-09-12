@@ -95,6 +95,12 @@ class OptimizationSection(PluginConfigBase):
         le=30000,
         description="允许生成的表达风格最大字符数。",
     )
+    max_plan_style_chars: int = Field(
+        default=8000,
+        ge=100,
+        le=30000,
+        description="允许生成的行为风格最大字符数。",
+    )
 
 
 class ChatSourceSection(PluginConfigBase):
