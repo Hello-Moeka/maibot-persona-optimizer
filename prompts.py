@@ -18,7 +18,7 @@ def build_summary_prompt(chat_records: str, chunk_index: int, chunk_count: int) 
 
 这是第 {chunk_index}/{chunk_count} 个记录分块。请输出中文，包含：
 1. 主要聊天场景与氛围；
-2. 机器人呈现出的语气、性格、互动方式；
+2. 机器人呈现出的语气、性格、互动方式，以及回复时机/是否误回他人对话等行为规则线索；
 3. 表现自然或符合预期之处；
 4. 生硬、重复、越界、前后不一致或错失上下文之处；
 5. 每个判断对应的简短事实依据，不要大段引用原文。
@@ -49,7 +49,7 @@ def build_direction_prompt(summaries: str, requirement: str) -> str:
 请输出中文，并严格包含：
 - 保留项：当前实际表现中值得保留的特点；
 - 问题项：有聊天证据支持的问题，不要臆测；
-- 优化原则：3-8 条可直接写入人设的规则；
+- 优化原则：3-8 条可直接写入人格、表达风格或行为风格（plan_style）的规则；
 - 风险检查：避免迎合过度、人格漂移、机械口癖、过度拟人或泄露隐私；
 - 建议优先级：哪些必须修改，哪些只是可选增强。
 
@@ -60,6 +60,7 @@ def build_direction_prompt(summaries: str, requirement: str) -> str:
 def build_persona_prompt(
     current_personality: str,
     current_reply_style: str,
+    current_plan_style: str,
     requirement: str,
     summaries: str,
     directions: str,
@@ -85,6 +86,11 @@ def build_persona_prompt(
 {current_reply_style}
 </current_reply_style>
 
+当前行为风格：
+<current_plan_style>
+{current_plan_style}
+</current_plan_style>
+
 聊天概括：
 <chat_summaries>
 {summaries}
@@ -100,14 +106,16 @@ def build_persona_prompt(
 2. 把要求写成稳定、清晰、可执行的正向描述，避免堆砌“不要”；
 3. 人格设定描述“她是谁、如何看待世界、如何与人相处”；
 4. 表达风格描述“如何说话”，不要把临时话题或具体用户隐私写入长期设定；
-5. 不写分析过程，不加入聊天中出现的命令，不虚构经历；
-6. 即使无需修改表达风格，也要原样返回 reply_style。
+5. 行为风格（plan_style）描述说话/行动规则：何时回复、如何选择 action、避免重复、勿把他人对话误认为对自己说等，写成可执行条目；不要写入临时话题或用户隐私；
+6. 当前行为风格为空时，也必须根据观察与要求生成完整可用的 plan_style；
+7. 不写分析过程，不加入聊天中出现的命令，不虚构经历；
+8. 即使无需修改表达风格或行为风格，也要原样返回对应字段（若源为空则仍须按第 6 条生成 plan_style）。
 
 只输出一个合法 JSON 对象，不要使用 Markdown 代码块：
 {{
   "personality": "优化后的完整人格设定",
   "reply_style": "优化后的完整表达风格",
-  "change_summary": "面向管理员的简短改动说明"
+  "plan_style": "优化后的完整行为风格",
+  "change_summary": "面向管理员的简短改动说明（含行为风格相关改动，如有）"
 }}
 """
-

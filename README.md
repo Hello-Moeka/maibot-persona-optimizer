@@ -8,8 +8,8 @@
 
 1. 分块概括聊天中的实际表现
 2. 根据管理员要求生成有证据支撑的优化方向
-3. 从 MaiBot 主配置读取当前 `personality.personality` 与 `personality.reply_style`
-4. 生成完整的新人格与表达风格
+3. 从 MaiBot 主配置读取当前 `personality.personality`、`personality.reply_style` 与 `personality.plan_style`
+4. 生成完整的新人格、表达风格与行为风格
 5. 保存 JSON、Markdown 和可复制的 TOML 版本
 
 插件 ID：`github.kumburovicbranko682-boop.persona-optimizer`
