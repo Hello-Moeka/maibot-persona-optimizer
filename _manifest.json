@@ -1,18 +1,18 @@
 {
   "manifest_version": 2,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "MaiBot 人设优化器",
   "description": "每小时概括聊天表现，使用可选模型生成人设优化方向与可审阅的新设定版本。",
   "author": {
-    "name": "kumburovicbranko682-boop",
-    "url": "https://github.com/kumburovicbranko682-boop"
+    "name": "Hello-Moeka",
+    "url": "https://github.com/Hello-Moeka"
   },
   "license": "MIT",
   "urls": {
-    "repository": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer",
-    "homepage": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer",
-    "documentation": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer/blob/main/README.md",
-    "issues": "https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer/issues"
+    "repository": "https://github.com/Hello-Moeka/maibot-persona-optimizer",
+    "homepage": "https://github.com/Hello-Moeka/maibot-persona-optimizer",
+    "documentation": "https://github.com/Hello-Moeka/maibot-persona-optimizer/blob/main/README.md",
+    "issues": "https://github.com/Hello-Moeka/maibot-persona-optimizer/issues"
   },
   "changelog": "CHANGELOG.md",
   "host_application": {
@@ -46,6 +46,5 @@
       "background": "#7C3AED"
     }
   },
-  "id": "github.kumburovicbranko682-boop.persona-optimizer"
+  "id": "github.Hello-Moeka.persona-optimizer"
 }
-

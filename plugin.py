@@ -21,7 +21,15 @@ from .config import CONFIG_VERSION, PersonaOptimizerConfig
 from .llm_client import LLMRouter, ModelSelection
 from .prompts import build_direction_prompt, build_persona_prompt, build_summary_prompt
 from .storage import ResultStorage, atomic_write_json
-from .utils import extract_json_object, iso_now, now_local, parse_iso_datetime, public_endpoint_label, split_text_chunks
+from .utils import (
+    extract_json_object,
+    iso_now,
+    now_local,
+    parse_iso_datetime,
+    public_endpoint_label,
+    split_text_chunks,
+    validate_generated_persona,
+)
 
 
 PLUGIN_ID = "local.maimai.persona-optimizer"
@@ -396,6 +404,7 @@ class PersonaOptimizerPlugin(MaiBotPlugin):
 
                 current_personality = str(await self.ctx.config.get("personality.personality", "") or "").strip()
                 current_reply_style = str(await self.ctx.config.get("personality.reply_style", "") or "").strip()
+                current_plan_style = str(await self.ctx.config.get("personality.plan_style", "") or "").strip()
                 if not current_personality:
                     raise RuntimeError("未能从 MaiBot 主配置读取 personality.personality")
 
@@ -403,6 +412,7 @@ class PersonaOptimizerPlugin(MaiBotPlugin):
                     build_persona_prompt(
                         current_personality=current_personality,
                         current_reply_style=current_reply_style,
+                        current_plan_style=current_plan_style,
                         requirement=requirement,
                         summaries=combined_summary,
                         directions=direction_result.text,
@@ -413,8 +423,13 @@ class PersonaOptimizerPlugin(MaiBotPlugin):
                 optimized = extract_json_object(persona_result.text)
                 optimized_personality = str(optimized.get("personality") or "").strip()
                 optimized_reply_style = str(optimized.get("reply_style") or current_reply_style).strip()
-                change_summary = str(optimized.get("change_summary") or "已按聊天表现与管理员要求优化。 ").strip()
-                self._validate_generated_persona(optimized_personality, optimized_reply_style)
+                optimized_plan_style = str(optimized.get("plan_style") or "").strip()
+                change_summary = str(optimized.get("change_summary") or "已按聊天表现与管理员要求优化。").strip()
+                self._validate_generated_persona(
+                    optimized_personality,
+                    optimized_reply_style,
+                    optimized_plan_style,
+                )
 
                 result_id = f"{now_local().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}"
                 unique_models = list(dict.fromkeys(name for name in model_names if name))
@@ -434,8 +449,10 @@ class PersonaOptimizerPlugin(MaiBotPlugin):
                     "optimization_directions": direction_result.text,
                     "source_personality": current_personality,
                     "source_reply_style": current_reply_style,
+                    "source_plan_style": current_plan_style,
                     "optimized_personality": optimized_personality,
                     "optimized_reply_style": optimized_reply_style,
+                    "optimized_plan_style": optimized_plan_style,
                     "change_summary": change_summary,
                 }
                 if self._storage is None:
@@ -551,15 +568,15 @@ class PersonaOptimizerPlugin(MaiBotPlugin):
             window_end=window_end,
         )
 
-    def _validate_generated_persona(self, personality: str, reply_style: str) -> None:
-        if len(personality) < 10:
-            raise ValueError("模型生成的人格设定过短")
-        if len(personality) > self.config.optimization.max_personality_chars:
-            raise ValueError("模型生成的人格设定超过配置上限")
-        if not reply_style:
-            raise ValueError("模型生成的表达风格为空")
-        if len(reply_style) > self.config.optimization.max_reply_style_chars:
-            raise ValueError("模型生成的表达风格超过配置上限")
+    def _validate_generated_persona(self, personality: str, reply_style: str, plan_style: str) -> None:
+        validate_generated_persona(
+            personality,
+            reply_style,
+            plan_style,
+            max_personality_chars=self.config.optimization.max_personality_chars,
+            max_reply_style_chars=self.config.optimization.max_reply_style_chars,
+            max_plan_style_chars=self.config.optimization.max_plan_style_chars,
+        )
 
     async def _is_administrator(self, platform: str, user_id: str) -> bool:
         normalized_user = str(user_id or "").strip().lower()
@@ -774,6 +791,7 @@ class PersonaOptimizerPlugin(MaiBotPlugin):
             f"改动：{record.get('change_summary', '')}\n\n"
             f"【优化后人格】\n{record.get('optimized_personality', '')}\n\n"
             f"【优化后表达风格】\n{record.get('optimized_reply_style', '')}\n\n"
+            f"【优化后行为风格】\n{record.get('optimized_plan_style', '')}\n\n"
             f"【优化方向】\n{record.get('optimization_directions', '')}"
         )
         limit = self.config.storage.command_output_chars

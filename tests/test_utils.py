@@ -7,6 +7,7 @@ from utils import (
     extract_json_object,
     normalize_chat_completions_endpoint,
     split_text_chunks,
+    validate_generated_persona,
 )
 
 
@@ -37,6 +38,40 @@ class UtilsTests(unittest.TestCase):
     def test_coerce_list_content(self) -> None:
         content = [{"type": "text", "text": "第一段"}, {"type": "text", "text": "第二段"}]
         self.assertEqual(coerce_text_content(content), "第一段\n第二段")
+
+
+class ValidateGeneratedPersonaTests(unittest.TestCase):
+    def test_rejects_empty_plan_style(self) -> None:
+        with self.assertRaisesRegex(ValueError, "行为风格为空"):
+            validate_generated_persona(
+                "这是足够长的人格设定文本内容。",
+                "表达自然。",
+                "",
+                max_personality_chars=12000,
+                max_reply_style_chars=8000,
+                max_plan_style_chars=8000,
+            )
+
+    def test_rejects_oversized_plan_style(self) -> None:
+        with self.assertRaisesRegex(ValueError, "行为风格超过配置上限"):
+            validate_generated_persona(
+                "这是足够长的人格设定文本内容。",
+                "表达自然。",
+                "x" * 101,
+                max_personality_chars=12000,
+                max_reply_style_chars=8000,
+                max_plan_style_chars=100,
+            )
+
+    def test_accepts_valid_three_fields(self) -> None:
+        validate_generated_persona(
+            "这是足够长的人格设定文本内容。",
+            "表达自然。",
+            "1. 不重复执行相同 action",
+            max_personality_chars=12000,
+            max_reply_style_chars=8000,
+            max_plan_style_chars=8000,
+        )
 
 
 if __name__ == "__main__":

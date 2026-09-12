@@ -149,6 +149,10 @@ class ResultStorage:
 
 {payload.get('optimized_reply_style', '')}
 
+## 优化后行为风格
+
+{payload.get('optimized_plan_style', '')}
+
 ## 优化前人格设定
 
 {payload.get('source_personality', '')}
@@ -156,16 +160,22 @@ class ResultStorage:
 ## 优化前表达风格
 
 {payload.get('source_reply_style', '')}
+
+## 优化前行为风格
+
+{payload.get('source_plan_style', '')}
 """
 
     @staticmethod
     def _build_toml(payload: dict[str, Any]) -> str:
         personality = json.dumps(str(payload.get("optimized_personality") or ""), ensure_ascii=False)
         reply_style = json.dumps(str(payload.get("optimized_reply_style") or ""), ensure_ascii=False)
+        plan_style = json.dumps(str(payload.get("optimized_plan_style") or ""), ensure_ascii=False)
         return f"""# 由人设优化插件生成。请审阅后复制到 MaiBot 的 bot_config.toml。
 # 版本: {payload.get('id', '')}
 
 [personality]
 personality = {personality}
 reply_style = {reply_style}
+plan_style = {plan_style}
 """

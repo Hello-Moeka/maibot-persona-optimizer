@@ -157,3 +157,28 @@ def coerce_text_content(content: Any) -> str:
                 parts.append(value)
     return "\n".join(part.strip() for part in parts if part.strip()).strip()
 
+
+def validate_generated_persona(
+    personality: str,
+    reply_style: str,
+    plan_style: str,
+    *,
+    max_personality_chars: int,
+    max_reply_style_chars: int,
+    max_plan_style_chars: int,
+) -> None:
+    """校验模型生成的人格、表达风格与行为风格。"""
+
+    if len(personality) < 10:
+        raise ValueError("模型生成的人格设定过短")
+    if len(personality) > max_personality_chars:
+        raise ValueError("模型生成的人格设定超过配置上限")
+    if not reply_style:
+        raise ValueError("模型生成的表达风格为空")
+    if len(reply_style) > max_reply_style_chars:
+        raise ValueError("模型生成的表达风格超过配置上限")
+    if not plan_style:
+        raise ValueError("模型生成的行为风格为空")
+    if len(plan_style) > max_plan_style_chars:
+        raise ValueError("模型生成的行为风格超过配置上限")
+
