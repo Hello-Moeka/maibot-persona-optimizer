@@ -12,9 +12,9 @@
 4. 生成完整的新人格、表达风格与行为风格
 5. 保存 JSON、Markdown 和可复制的 TOML 版本
 
-插件 ID：`github.kumburovicbranko682-boop.persona-optimizer`
+插件 ID：`github.Hello-Moeka.persona-optimizer`
 
-仓库：https://github.com/kumburovicbranko682-boop/maibot-persona-optimizer
+仓库：https://github.com/Hello-Moeka/maibot-persona-optimizer
 
 ## 兼容性
 
@@ -112,7 +112,7 @@ custom_model_name = "your-model"
 输出位于插件持久化路径：
 
 ```text
-data/plugins/github.kumburovicbranko682-boop.persona-optimizer/settings/
+data/plugins/github.Hello-Moeka.persona-optimizer/settings/
 ├─ latest.json
 ├─ latest.md
 ├─ latest.toml

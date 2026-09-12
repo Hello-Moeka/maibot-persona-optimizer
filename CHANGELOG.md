@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.0 - 2026-09-12
+
 - 优化结果增加行为风格（`personality.plan_style`）：提示词、校验、QQ 查看、Markdown 与 `latest.toml` 全链路输出。
 
 ## 1.0.0 - 2026-07-10
