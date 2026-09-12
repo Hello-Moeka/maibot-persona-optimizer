@@ -23,8 +23,10 @@ def build_payload(result_id: str) -> dict[str, object]:
         "change_summary": "减少模板化表达",
         "optimized_personality": "这是优化后的完整人格设定。",
         "optimized_reply_style": "表达自然简短。",
+        "optimized_plan_style": "1. 不重复执行相同 action\n2. 追问时继续回复",
         "source_personality": "原人格",
         "source_reply_style": "原风格",
+        "source_plan_style": "原行为风格",
     }
 
 
@@ -52,7 +54,34 @@ class StorageTests(unittest.TestCase):
             self.assertIsNotNone(newest)
             self.assertEqual(newest["id"], "20260710-140000-cd34ef56")
 
+    def test_markdown_and_toml_include_plan_style(self) -> None:
+        with TemporaryDirectory() as temporary_directory:
+            storage = ResultStorage(Path(temporary_directory) / "settings", history_limit=5)
+            payload = build_payload("20260710-120000-ab12cd34")
+            storage.save_result(payload)
+
+            markdown = (storage.settings_dir / "latest.md").read_text(encoding="utf-8")
+            toml_text = (storage.settings_dir / "latest.toml").read_text(encoding="utf-8")
+
+            self.assertIn("## 优化后行为风格", markdown)
+            self.assertIn(str(payload["optimized_plan_style"]), markdown)
+            self.assertIn("## 优化前行为风格", markdown)
+            self.assertIn(str(payload["source_plan_style"]), markdown)
+            self.assertIn("plan_style =", toml_text)
+            self.assertIn("不重复执行相同 action", toml_text)
+
+    def test_missing_plan_style_fields_do_not_crash(self) -> None:
+        with TemporaryDirectory() as temporary_directory:
+            storage = ResultStorage(Path(temporary_directory) / "settings", history_limit=5)
+            payload = build_payload("20260710-120000-ab12cd34")
+            del payload["optimized_plan_style"]
+            del payload["source_plan_style"]
+            storage.save_result(payload)
+            markdown = (storage.settings_dir / "latest.md").read_text(encoding="utf-8")
+            toml_text = (storage.settings_dir / "latest.toml").read_text(encoding="utf-8")
+            self.assertIn("## 优化后行为风格", markdown)
+            self.assertIn("plan_style =", toml_text)
+
 
 if __name__ == "__main__":
     unittest.main()
-
